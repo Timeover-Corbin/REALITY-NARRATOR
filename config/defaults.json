@@ -1,0 +1,38 @@
+{
+  "capture": {
+    "frame_count": 12,
+    "sample_fps": 3,
+    "window_seconds": 6,
+    "image_width": 640,
+    "jpeg_quality": 0.7,
+    "max_buffer_mb": 24,
+    "max_frame_gap_seconds": 2
+  },
+  "loop": {
+    "cooldown_seconds": 1,
+    "request_timeout_seconds": 50,
+    "max_result_age_seconds": 60,
+    "history_size": 4,
+    "max_consecutive_errors": 3
+  },
+  "narration": {
+    "provider": "openai",
+    "language": "zh-CN",
+    "style_mode": "random",
+    "fixed_style": "deadpan",
+    "style_pool": [
+      "deadpan",
+      "documentary",
+      "bureaucratic",
+      "epic",
+      "unreliable"
+    ],
+    "max_characters": 90
+  },
+  "audio": {
+    "provider": "browser",
+    "browser_voice_uri": "",
+    "volume": 0.9,
+    "speech_rate": 1
+  }
+}
