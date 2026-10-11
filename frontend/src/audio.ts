@@ -1,4 +1,4 @@
-import type { NarrationResponse, RuntimeConfig } from './types';
+import type { NarrationResponse, RuntimeConfig, SpeechAudio } from './types';
 
 export interface Speaker {
   play(result: NarrationResponse, config: RuntimeConfig, signal: AbortSignal): Promise<void>;
@@ -34,7 +34,7 @@ export class AudioPlayer implements Speaker {
     window.speechSynthesis?.getVoices();
   }
 
-  async play(result: NarrationResponse, config: RuntimeConfig, signal: AbortSignal): Promise<void> {
+  async play(result: SpeechAudio, config: RuntimeConfig, signal: AbortSignal): Promise<void> {
     if (signal.aborted) return;
     this.stop();
     if (result.audio_base64) {

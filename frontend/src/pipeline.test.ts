@@ -62,6 +62,9 @@ describe('observation windows', () => {
     expect(validateConfig(config)).toEqual([]);
     config.audio.provider = 'browser';
     expect(validateConfig(config)).toEqual([]);
+    config.audio.provider = 'elevenlabs';
+    config.narration.character = 'skeptic';
+    expect(validateConfig(config)).toEqual([]);
   });
   it('rejects unsupported model and speech providers', () => {
     const config = cloneConfig(DEFAULT_CONFIG);

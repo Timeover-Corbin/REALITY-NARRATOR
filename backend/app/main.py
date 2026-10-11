@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image, UnidentifiedImageError
 from pydantic import ValidationError
 
-from .models import BatchMetadata, RuntimeConfig
+from .models import BatchMetadata, RuntimeConfig, VoicePreviewRequest
 from .prompts import load_styles
 from .provider import AIProvider, ProviderError
 from .service import NarrationService
@@ -27,7 +27,8 @@ async def watch_disconnect(request: Request):
             return
 
 
-async def run_cancellable(request: Request, awaitable, timeout: float):
+async def run_cancellable(request: Request, awaitable, timeout: float,
+                          timeout_message: str = "本批次处理超时，请减少图片数量或使用更快的模型。"):
     work = asyncio.create_task(awaitable)
     disconnected = asyncio.create_task(watch_disconnect(request))
     try:
@@ -36,7 +37,7 @@ async def run_cancellable(request: Request, awaitable, timeout: float):
             return await work
         if disconnected in done:
             raise HTTPException(499, "客户端已停止本次请求。")
-        raise HTTPException(504, "本批次处理超时，请减少图片数量或使用更快的模型。")
+        raise HTTPException(504, timeout_message)
     finally:
         for task in (work, disconnected):
             if not task.done():
@@ -65,6 +66,9 @@ def create_app(settings: Settings | None = None, service=None) -> FastAPI:
                           for provider in ("openai", "deepseek")},
             "tts": {"configured": bool(settings.openai_api_key), "model": settings.openai_tts_model,
                     "voice": settings.openai_tts_voice},
+            "elevenlabs": {"configured": bool(settings.elevenlabs_api_key), "model": settings.elevenlabs_tts_model,
+                           "voices": {character: {"configured": bool(settings.elevenlabs_voice_for(character))}
+                                      for character in ("grandma", "skeptic")}},
         }
 
     @app.get("/api/config")
@@ -118,6 +122,22 @@ def create_app(settings: Settings | None = None, service=None) -> FastAPI:
         finally:
             for frame in frames:
                 await frame.close()
+
+    @app.post("/api/voices/preview")
+    async def preview_voice(request: Request, payload: VoicePreviewRequest):
+        # Fixed, short samples; share the narration concurrency limit and cancellation.
+        acquired = False
+        try:
+            await asyncio.wait_for(slots.acquire(), timeout=0.5)
+            acquired = True
+            return await run_cancellable(request, app.state.service.preview_voice(payload), 45, "声音试听请求超时")
+        except TimeoutError as exc:
+            raise HTTPException(429, "后端正在处理其他批次，请稍后再试。") from exc
+        except ProviderError as exc:
+            raise HTTPException(exc.status_code, str(exc)) from exc
+        finally:
+            if acquired:
+                slots.release()
 
     dist = ROOT / "frontend" / "dist"
     if dist.is_dir():

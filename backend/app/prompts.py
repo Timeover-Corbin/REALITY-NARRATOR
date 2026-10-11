@@ -1,5 +1,6 @@
 import json
 import secrets
+from string import Template
 from pathlib import Path
 
 from .models import BatchMetadata
@@ -9,6 +10,11 @@ PROMPT_DIR = Path(__file__).resolve().parents[1] / "prompts"
 
 def load_styles() -> list[dict]:
     return json.loads((PROMPT_DIR / "styles.json").read_text(encoding="utf-8"))
+
+
+def load_character(character: str) -> dict:
+    characters = json.loads((PROMPT_DIR / "characters.json").read_text(encoding="utf-8"))
+    return next(item for item in characters if item["id"] == character)
 
 
 def choose_style(metadata: BatchMetadata) -> dict:
@@ -28,11 +34,11 @@ def build_prompt(metadata: BatchMetadata, style: dict) -> str:
     history_size = metadata.config.loop.history_size
     recent = metadata.recent_narrations[-history_size:] if history_size else []
     values = {
+        "character_instruction": load_character(metadata.config.narration.character)["instruction"],
         "style_instruction": style["instruction"],
         "language": "Simplified Chinese" if metadata.config.narration.language == "zh-CN" else "English",
         "max_characters": metadata.config.narration.max_characters,
         "recent_narrations": json.dumps(recent, ensure_ascii=False),
     }
-    for key, value in values.items():
-        template = template.replace("${" + key + "}", str(value))
-    return template
+    # One pass keeps history data from expanding other template placeholders.
+    return Template(template).substitute(values)
