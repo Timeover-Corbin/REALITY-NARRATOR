@@ -36,7 +36,8 @@ export function validateConfig(config: RuntimeConfig): string[] {
   if (c.sample_fps * c.window_seconds < c.frame_count) errors.push('观察窗口 × 截图频率必须至少等于图片数量');
   if (!['zh-CN', 'en-US'].includes(n.language)) errors.push('不支持的语言');
   if (!['openai', 'deepseek'].includes(n.provider)) errors.push('请选择 GPT 或 DeepSeek');
-  if (!['browser', 'openai'].includes(a.provider)) errors.push('不支持的语音来源');
+  if (!['grandma', 'skeptic'].includes(n.character)) errors.push('不支持的旁白角色');
+  if (!['browser', 'openai', 'elevenlabs'].includes(a.provider)) errors.push('不支持的语音来源');
   if (typeof a.browser_voice_uri !== 'string' || a.browser_voice_uri.length > 500) errors.push('浏览器声音标识无效');
   if (!['fixed', 'random'].includes(n.style_mode)) errors.push('不支持的风格模式');
   if (!STYLE_IDS.includes(n.fixed_style)) errors.push('不支持的旁白风格');
@@ -49,6 +50,8 @@ export function loadSavedConfig(fallback = DEFAULT_CONFIG): RuntimeConfig {
     const saved = localStorage.getItem('reality-narrator-config-v2');
     if (saved) {
       const config = JSON.parse(saved) as RuntimeConfig;
+      // Add the character without discarding existing camera or playback preferences.
+      config.narration.character ??= fallback.narration.character;
       if (!validateConfig(config).length) return config;
     }
   } catch { /* Ignore stale browser preferences, including incompatible shapes. */ }

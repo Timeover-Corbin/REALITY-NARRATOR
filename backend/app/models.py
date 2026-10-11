@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 StyleId = Literal["deadpan", "documentary", "bureaucratic", "epic", "unreliable"]
+CharacterId = Literal["grandma", "skeptic"]
 
 
 class StrictModel(BaseModel):
@@ -35,6 +36,7 @@ class LoopConfig(StrictModel):
 
 class NarrationConfig(StrictModel):
     provider: Literal["openai", "deepseek"] = "openai"
+    character: CharacterId = "grandma"
     language: Literal["zh-CN", "en-US"]
     style_mode: Literal["random", "fixed"]
     fixed_style: StyleId
@@ -43,7 +45,7 @@ class NarrationConfig(StrictModel):
 
 
 class AudioConfig(StrictModel):
-    provider: Literal["browser", "openai"] = "browser"
+    provider: Literal["browser", "openai", "elevenlabs"] = "browser"
     browser_voice_uri: str = Field(default="", max_length=500)
     volume: float = Field(ge=0, le=1)
     speech_rate: float = Field(ge=0.6, le=1.5)
@@ -54,6 +56,11 @@ class RuntimeConfig(StrictModel):
     loop: LoopConfig
     narration: NarrationConfig
     audio: AudioConfig
+
+
+class VoicePreviewRequest(StrictModel):
+    character: CharacterId
+    language: Literal["zh-CN", "en-US"] = "en-US"
 
 
 class BatchMetadata(StrictModel):

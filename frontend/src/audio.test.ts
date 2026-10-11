@@ -34,6 +34,7 @@ function browserSpeech() {
   vi.stubGlobal('window', { speechSynthesis: synth });
   vi.stubGlobal('SpeechSynthesisUtterance', TestUtterance);
   const config = cloneConfig(DEFAULT_CONFIG);
+  config.narration.language = 'zh-CN';
   config.audio.browser_voice_uri = online.voiceURI;
   return { player: new AudioPlayer(), config, synth, utterance: () => utterance };
 }

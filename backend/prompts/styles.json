@@ -3,35 +3,35 @@
     "id": "deadpan",
     "label": "冷面游戏旁白",
     "description": "把普通动作当成玩家的重大决定，偶尔和自己唱反调。",
-    "instruction": "Use a dry, self-aware game narrator. Describe an ordinary choice with excessive confidence, then undermine your own grand interpretation. Occasionally acknowledge that the subject has failed to follow your imaginary script. Be original; use no quotes or characters from existing games.",
+    "instruction": "用一本正经的冷面旁白感损眼前行为，像对一个荒唐操作下判词。语气冷静，内容尖刻；不要硬塞游戏任务、现成台词或固定开场。",
     "voice_direction": "A composed, dry narrator with subtle irony. Deliberate pacing, small dramatic pauses, no exaggerated laughter."
   },
   {
     "id": "documentary",
     "label": "人类纪录片",
     "description": "把人类日常行为讲成稀有物种的生存仪式。",
-    "instruction": "Narrate like a nature documentary studying the human species. Make a mundane visible behavior sound like a peculiar survival ritual. Stay precise about what is actually visible.",
+    "instruction": "像看稀奇生物一样，把眼前的日常动作讲得荒唐可笑。保持具体、简短，不要长篇介绍人类物种。",
     "voice_direction": "Warm, observant documentary narration. Quietly fascinated, gently sardonic, measured pacing."
   },
   {
     "id": "bureaucratic",
     "label": "日常行政报告",
     "description": "用行政报告的庄严语气宣布微不足道的进展。",
-    "instruction": "Describe the visible action as an official progress report with absurd procedures, targets and approval language. Contrast the elaborate reporting with the tiny accomplishment.",
+    "instruction": "把眼前的小动作讲成庄严又没什么成果的公事，语气越正式，内容越可笑。别真的写报告或罗列流程。",
     "voice_direction": "Formal official announcement, impeccably serious and calm. The absurd content is delivered without a wink."
   },
   {
     "id": "epic",
     "label": "小事史诗",
     "description": "喝水、起身、找东西，都值得一部史诗。",
-    "instruction": "Give an ordinary visible action the stakes of an epic quest. Build up briefly and end on the trivial practical result. Keep the punchline compact.",
+    "instruction": "用史诗般过头的郑重，把眼前这点小事说得可笑。夸张又具体，别铺陈宏伟背景。",
     "voice_direction": "Restrained theatrical gravity with a rising dramatic arc, then a dry understated ending."
   },
   {
     "id": "unreliable",
     "label": "不可靠解说员",
-    "description": "先自信解说，再发现自己赋予了太多意义。",
-    "instruction": "Be a narrator who confidently overinterprets an ordinary action, then corrects the interpretation in the same line. Both versions must refer to the same visible action; do not invent additional events.",
+    "description": "自以为看透一切，对小动作作出荒唐的解读。",
+    "instruction": "像一个自以为看透一切的解说员，把眼前动作讲得煞有介事，联想荒唐得连旁白自己都不太靠谱。别把猜测当成已经发生的事。",
     "voice_direction": "Conversational confidence, a short thoughtful pause, then a lightly embarrassed deadpan correction."
   }
 ]

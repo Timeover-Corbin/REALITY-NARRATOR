@@ -1,4 +1,4 @@
-"""GPT / DeepSeek image narration and independent OpenAI speech via REST."""
+"""GPT / DeepSeek image narration and independent cloud speech via REST."""
 import base64
 import io
 import json
@@ -42,7 +42,7 @@ def validate_wav(data: bytes) -> AudioResult:
 
 
 def pcm_to_wav(data: bytes) -> AudioResult:
-    # OpenAI PCM is 24kHz, signed 16-bit little-endian mono.
+    # OpenAI PCM and ElevenLabs pcm_24000 are 24kHz signed 16-bit mono.
     if not data or len(data) % 2 or len(data) > 24000 * 2 * 90:
         raise ProviderError("TTS返回了无效或过长的PCM音频。")
     output = io.BytesIO()
@@ -236,4 +236,43 @@ class AIProvider:
             raise ProviderError("云端语音合成超时。", 504) from exc
         except httpx.HTTPError as exc:
             raise ProviderError("无法连接云端语音服务。") from exc
+        return pcm_to_wav(bytes(output))
+
+    async def synthesize_elevenlabs(self, narration: str, language: str, character: str) -> AudioResult:
+        key = self.settings.elevenlabs_api_key
+        if not key:
+            raise ProviderError("请先在 backend/.env 设置 ELEVENLABS_API_KEY，然后重启后端。", 503)
+        voice_id = self.settings.elevenlabs_voice_for(character)
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,100}", voice_id):
+            variable = f"ELEVENLABS_{character.upper()}_VOICE_ID"
+            raise ProviderError(f"请先在 backend/.env 设置 {variable}，然后重启后端。", 503)
+        payload = {"text": narration, "model_id": self.settings.elevenlabs_tts_model}
+        if self.settings.elevenlabs_tts_model != "eleven_multilingual_v2":
+            payload["language_code"] = language.split("-")[0]
+        try:
+            async with self.client.stream(
+                "POST", f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
+                params={"output_format": "pcm_24000"}, json=payload,
+                headers={"xi-api-key": key}, timeout=45,
+            ) as response:
+                # Never pass upstream bodies (which may echo private text) to the UI.
+                if response.status_code == 402:
+                    raise ProviderError("ElevenLabs 要求付费权限（payment_required），请检查账户套餐及该声音的 API 使用权限。", 402)
+                if response.status_code == 404:
+                    raise ProviderError("ElevenLabs 找不到所选声音，请检查 My Voices 和 Voice ID。")
+                if response.status_code in {400, 403, 422}:
+                    raise ProviderError("ElevenLabs 无法使用所选声音，请检查 My Voices、Voice ID、模型及账户套餐权限。")
+                check_status(response, "ElevenLabs")
+                content_type = response.headers.get("content-type", "").split(";")[0].strip().lower()
+                if content_type and not (content_type.startswith("audio/") or content_type == "application/octet-stream"):
+                    raise ProviderError("ElevenLabs 返回了无效音频。")
+                output = bytearray()
+                async for chunk in response.aiter_bytes():
+                    output.extend(chunk)
+                    if len(output) > 24000 * 2 * 90:
+                        raise ProviderError("TTS音频超过大小限制。")
+        except httpx.TimeoutException as exc:
+            raise ProviderError("ElevenLabs 响应超时，请稍后再试。", 504) from exc
+        except httpx.HTTPError as exc:
+            raise ProviderError("无法连接 ElevenLabs，请检查后端网络。") from exc
         return pcm_to_wav(bytes(output))

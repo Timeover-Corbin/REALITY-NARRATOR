@@ -17,7 +17,8 @@
   },
   "narration": {
     "provider": "openai",
-    "language": "zh-CN",
+    "character": "grandma",
+    "language": "en-US",
     "style_mode": "random",
     "fixed_style": "deadpan",
     "style_pool": [
@@ -27,7 +28,7 @@
       "epic",
       "unreliable"
     ],
-    "max_characters": 90
+    "max_characters": 220
   },
   "audio": {
     "provider": "browser",
